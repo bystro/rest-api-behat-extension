@@ -48,27 +48,21 @@ class RestApiContext implements Context, SnippetAcceptingContext
     }
 
     /**
-     * Sends HTTP request to specific URL with raw body from PyString.
-     *
-     * @param string    $method     request method
-     * @param string    $url        relative url
-     * @param TableNode $parameters
-     *
-     * @When /^(?:I )?send a ([A-Z]+) request to "([^"]+)" with parameters:$/
+     * @When I send a POST request to :url as HTML form with data:
      */
-    public function iSendARequestWithParameters($method, $url, TableNode $parameters = null)
+    public function iSendAPostRequestToAsHtmlFormWithData($url, TableNode $formfields) 
     {
-        $this->restApiBrowser->sendRequest($method, $url, $parameters->getRowsHash());
-    }
+        $body = [];
+        foreach ($formfields as $formfield) {
 
-    /**
-     * @When I attach the following files:
-     */
-    public function iAttachTheFollowingFiles(TableNode $files)
-    {
-        foreach ($files as $file) {
-            $this->restApiBrowser->addFileToRequest($file['name'], $file['path']);
+            if (!isset($formfield['object'])) {
+                throw new \Exception('You have to specify an object attribute');
+            }
+
+            $body[] = $formfield;
         }
+
+        $this->restApiBrowser->sendRequest("POST", $url, $body);
     }
 
     /**
